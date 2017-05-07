@@ -9,21 +9,44 @@ import {
   AppRegistry,
   StyleSheet,
   Text,
-  View
+  View,
+  ScrollView,
+  Dimensions,
 } from 'react-native';
 import Mirror from './src/Mirror'
+import Ex from './ExampleComponent'
 
 export default class reactNativeMirror extends Component {
   render() {
     return (
-      <View style={styles.container}>
-        <Mirror>
-          <View>
-            <View>
-              <Text>Test</Text>
-            </View>
+      <View testID='123' style={styles.container}>
+        <View style={{flex:1}}>
+          <View style={{flex:1}}>
+            {/*<Mirror>
+              <Ex />
+            </Mirror>*/}
           </View>
-        </Mirror>
+          <View style={{flex:1}}>
+            {/*<Mirror>
+              <Ex />
+            </Mirror>*/}
+          </View>
+        </View>
+        <View style={{flex:1}}>
+
+         <View style={{flex:1}}>
+          {/*<Mirror>
+              <Ex />
+          </Mirror>*/}
+        </View>
+
+         <View style={{flex:1}}>
+          <Mirror>
+            {React.cloneElement(<Ex />)}
+            
+          </Mirror>
+        </View>
+        </View>
       </View>
     );
   }
@@ -32,8 +55,8 @@ export default class reactNativeMirror extends Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    flexDirection: 'row',
     justifyContent: 'center',
-    alignItems: 'center',
     backgroundColor: '#F5FCFF',
   },
   welcome: {

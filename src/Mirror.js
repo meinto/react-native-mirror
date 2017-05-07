@@ -2,7 +2,10 @@ import React, {
   PureComponent,
   Children,
 } from 'react'
-import { View } from 'react-native'
+import { 
+  View,
+  PanResponder,
+} from 'react-native'
 import type from 'type-detect'
 import { EventRegister } from 'react-native-event-listeners'
 
@@ -22,6 +25,13 @@ class Mirror extends PureComponent {
       ],
       from: 'onScroll',
       to: 'scrollTo',
+      dataExtractor: event => {
+        return {
+          y: event.nativeEvent.contentOffset.y,
+          x: event.nativeEvent.contentOffset.x,
+          animated: false,
+        }
+      }
     },
   ]
 
@@ -29,6 +39,7 @@ class Mirror extends PureComponent {
     super(props)
 
     this.forwardProps = [...Mirror.forwardProps, ...this.props.forwardProps]
+    this._isSlave = true
 
     this.state = {
       children: null,
@@ -39,6 +50,17 @@ class Mirror extends PureComponent {
     this._refNum = 0
     this.references = []
     this.listeners = []
+    // this._prepareChildren()
+
+    this._panResponder = PanResponder.create({
+      onStartShouldSetPanResponder: (evt, gestureState) => {
+        this._isSlave = false
+        return true
+      },
+    })
+  }
+
+  componentDidMount() {
     this._prepareChildren()
   }
 
@@ -53,19 +75,24 @@ class Mirror extends PureComponent {
     }
   }
 
-  _inject = (name, ref, mapTo, data) => {
-    EventRegister.emit('onScroll', {
-      forwardFuncName,
-      data: {
+  _inject = (name, ref, data) => {
+    if (!this._isSlave) {
+      EventRegister.emit(name, {
+        emitter: this,
         id: this.props.id,
         ref,
         data,
-      }
-    })
+      })
+    }
   }
 
   _mapChildren = (children) => {
     return Children.map(children, _child => {
+      Object.keys(_child._owner).map(_key => {
+        console.log(_key)
+      })
+      // console.log('store', _child._owner._renderedComponent)
+      console.log('store', _child._owner._topLevelWrapper)
       let clonedElement = _child
 
       const typeName = type(_child.type) === 'string' ? _child.type : (_child.type) ? _child.type.displayName : false
@@ -73,31 +100,38 @@ class Mirror extends PureComponent {
       if (typeName) {
         let injectedProps = {}
 
+        /* store a reference of every child element */
         const _ref = 'mirror-' + this._refNum++
         
+        /* prepare forwards
+         * example: { onScroll: { forwardTo: ['scrollTo'], dataExtractor } }
+         */
         const forwards = {}
         this.forwardProps.forEach(_forwardConfig => {
           const shouldForward = _forwardConfig.acceptedTypes.includes(typeName)
           if (shouldForward) {
             if (forwards[_forwardConfig.from] === undefined)
               forwards[_forwardConfig.from] = []
-            forwards[_forwardConfig.from] = [...forwards[_forwardConfig.from], _forwardConfig.to]
+            forwards[_forwardConfig.from] = {
+              forwardTo: [...forwards[_forwardConfig.from], _forwardConfig.to],
+              dataExtractor: _forwardConfig.dataExtractor
+            }
           }
         })
 
         Object.keys(forwards).forEach(_key => {
           const originalProp = _child.props[_key]
-          injectedProps[_key] = () => {
-            args = arguments
-            forwards[_key].forEach(name => {
-              this._inject(name, _ref, args)
+          injectedProps[_key] = (...args) => {
+            const _args = (args.length > 1) ? args : args[0]
+            forwards[_key].forwardTo.forEach(name => {
+              this._inject(name, _ref, _args)
             })
             if (type(originalProp) === 'function')
-              (type(args) === 'Array') ? originalProp(...args) : originalProp(args)
+              (args.length > 1) ? originalProp(...args) : originalProp(args[0])
           }
 
-          forwards[_key].forEach(name => {
-            this._registerListener(name, _ref)
+          forwards[_key].forwardTo.forEach(name => {
+            this._registerListener(name, _ref, forwards[_key].dataExtractor)
           })
         })
 
@@ -129,10 +163,18 @@ class Mirror extends PureComponent {
     })
   }
 
-  _registerListener = (name, ref) => {
+  _registerListener = (name, ref, dataExtractor) => {
     this.listeners = [...this.listeners, EventRegister.on(name, data => {
-      if (data.ref === ref) {
-        (type(data.data) === 'Array') ? this.references[ref][name](...data.data) : this.references[ref][name](data.data)
+      if (data.ref === ref && data.emitter !== this) {
+        this._isSlave = true
+        if (
+          type(data.data) === 'Array' && 
+          type(this.references[ref][name]) === 'function'
+        ) {
+          this.references[ref][name](dataExtractor(...data.data))
+        } else {
+          this.references[ref][name](dataExtractor(data.data))
+        }
       }
     })]
   }
@@ -144,7 +186,9 @@ class Mirror extends PureComponent {
   }
 
   render() {
-    return <View>{this.state.children}</View>
+    return <View
+      {...this._panResponder.panHandlers}
+    >{this.state.children}</View>
   }
 
 }
