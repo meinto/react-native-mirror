@@ -15,16 +15,16 @@ class Mirror extends PureComponent {
   static defaultProps = {
     id: 'mirror',
     forwardProps: [],
+    _isRootMirror: true,
   }
 
   static forwardProps = [
     {
       acceptedTypes: [
         'ScrollView',
-        'View',
       ],
-      from: 'onScroll',
-      to: 'scrollTo',
+      fromProp: 'onScroll',
+      toInstance: 'scrollTo',
       dataExtractor: event => {
         return {
           y: event.nativeEvent.contentOffset.y,
@@ -32,6 +32,24 @@ class Mirror extends PureComponent {
           animated: false,
         }
       }
+    },
+    {
+      acceptedTypes: [
+        'TouchableHighlight',
+        'TouchableWithoutFeedback',
+      ],
+      fromProp: 'onPressIn',
+      toProp: 'onPressIn',
+      dataExtractor: () => {}
+    },
+    {
+      acceptedTypes: [
+        'TouchableHighlight',
+        'TouchableWithoutFeedback',
+      ],
+      fromProp: 'onPressOut',
+      toProp: 'onPressOut',
+      dataExtractor: () => {}
     },
   ]
 
@@ -58,6 +76,8 @@ class Mirror extends PureComponent {
         return true
       },
     })
+
+    this._panHandlers = this._panResponder.panHandlers
   }
 
   componentDidMount() {
@@ -88,68 +108,99 @@ class Mirror extends PureComponent {
 
   _mapChildren = (children) => {
     return Children.map(children, _child => {
-      Object.keys(_child._owner).map(_key => {
-        console.log(_key)
-      })
-      // console.log('store', _child._owner._renderedComponent)
-      console.log('store', _child._owner._topLevelWrapper)
       let clonedElement = _child
+      
+      if (clonedElement.props && clonedElement.props.mirrorChildren === true) {
 
-      const typeName = type(_child.type) === 'string' ? _child.type : (_child.type) ? _child.type.displayName : false
+        /* inheritance inversion to inject child tree of component */
+        const ClassToExtend = _child.type
+        class InjectChildTree extends ClassToExtend {
+          render() {
+            return (
+              <Mirror
+                _isRootMirror={false}
+              >
+                {super.render()}
+              </Mirror>
+            )
+          }
+        }
 
-      if (typeName) {
-        let injectedProps = {}
+        clonedElement = <InjectChildTree />
 
-        /* store a reference of every child element */
-        const _ref = 'mirror-' + this._refNum++
-        
-        /* prepare forwards
-         * example: { onScroll: { forwardTo: ['scrollTo'], dataExtractor } }
-         */
-        const forwards = {}
-        this.forwardProps.forEach(_forwardConfig => {
-          const shouldForward = _forwardConfig.acceptedTypes.includes(typeName)
-          if (shouldForward) {
-            if (forwards[_forwardConfig.from] === undefined)
-              forwards[_forwardConfig.from] = []
-            forwards[_forwardConfig.from] = {
-              forwardTo: [...forwards[_forwardConfig.from], _forwardConfig.to],
-              dataExtractor: _forwardConfig.dataExtractor
+      } else {
+
+        const typeName = type(_child.type) === 'string' ? _child.type : (_child.type) ? _child.type.displayName : false
+
+        if (typeName) {
+          let injectedProps = {}
+
+          /* store a reference of every child element */
+          const _ref = 'mirror-' + this._refNum++
+          
+          /* prepare forwards
+          * example: 
+            { 
+              onScroll: { 
+                forwardToInstance: ['scrollTo'], 
+                forwardToProp: ['customProp'], 
+                dataExtractor 
+              } 
             }
-          }
-        })
-
-        Object.keys(forwards).forEach(_key => {
-          const originalProp = _child.props[_key]
-          injectedProps[_key] = (...args) => {
-            const _args = (args.length > 1) ? args : args[0]
-            forwards[_key].forwardTo.forEach(name => {
-              this._inject(name, _ref, _args)
-            })
-            if (type(originalProp) === 'function')
-              (args.length > 1) ? originalProp(...args) : originalProp(args[0])
-          }
-
-          forwards[_key].forwardTo.forEach(name => {
-            this._registerListener(name, _ref, forwards[_key].dataExtractor)
+          */
+          const forwards = {}
+          this.forwardProps.forEach(_forwardConfig => {
+            const shouldForward = _forwardConfig.acceptedTypes.includes(typeName)
+            if (shouldForward) {
+              if (forwards[_forwardConfig.fromProp] === undefined)
+                forwards[_forwardConfig.fromProp] = []
+              forwards[_forwardConfig.fromProp] = {
+                forwardToInstance: [...forwards[_forwardConfig.fromProp], _forwardConfig.toInstance],
+                forwardToProp: [...forwards[_forwardConfig.fromProp], _forwardConfig.toProp],
+                dataExtractor: _forwardConfig.dataExtractor
+              }
+            }
           })
-        })
 
-        const children = _child.props.children && this._mapChildren(_child.props.children)
-
-        injectedProps = Object.assign({}, _child.props, injectedProps, {
-          ref: node => {
-            this.references[_ref] = node 
-
-            const {ref} = _child 
-            if (type(ref) === 'function') {
-              ref(node)
+          Object.keys(forwards).forEach(_key => {
+            const originalProp = _child.props[_key]
+            injectedProps[_key] = (...args) => {
+              const _args = (args.length > 1) ? args : args[0]
+              forwards[_key].forwardToInstance.forEach(name => {
+                this._inject(name, _ref, _args)
+              })
+              forwards[_key].forwardToProp.forEach(name => {
+                this._inject(name, _ref, _args)
+              })
+              if (type(originalProp) === 'function')
+                (args.length > 1) ? originalProp(...args) : originalProp(args[0])
             }
-          },
-          children,
-        })
 
-        clonedElement = React.cloneElement(_child, injectedProps)
+            forwards[_key].forwardToInstance.forEach(name => {
+              this._registerInstanceListener(name, _ref, forwards[_key].dataExtractor)
+            })
+            forwards[_key].forwardToProp.forEach(name => {
+              this._registerPropertyListener(name, _ref, forwards[_key].dataExtractor)
+            })
+          })
+
+          let children = _child.props.children && this._mapChildren(_child.props.children)
+          children = (children.length > 1) ? children : children[0]
+
+          injectedProps = Object.assign({}, _child.props, injectedProps, {
+            ref: node => {
+              this.references[_ref] = node 
+
+              const {ref} = _child 
+              if (type(ref) === 'function') {
+                ref(node)
+              }
+            },
+            children,
+          })
+
+          clonedElement = React.cloneElement(_child, injectedProps)
+        }
       }
 
       return clonedElement
@@ -163,17 +214,33 @@ class Mirror extends PureComponent {
     })
   }
 
-  _registerListener = (name, ref, dataExtractor) => {
+  _registerInstanceListener(name, ref, dataExtractor) {
+    this._registerListener(name, ref, dataExtractor, false)
+  }
+
+  _registerPropertyListener(name, ref, dataExtractor) {
+    this._registerListener(name, ref, dataExtractor, true)
+  }
+
+  _registerListener = (name, ref, dataExtractor, isProperty) => {
     this.listeners = [...this.listeners, EventRegister.on(name, data => {
       if (data.ref === ref && data.emitter !== this) {
         this._isSlave = true
+
+        const referenceFunction = (isProperty) 
+          ? this.references[ref].props[name]
+          : this.references[ref][name]
+
+        if (type(referenceFunction) !== 'function') {
+          return false
+        }
+
         if (
-          type(data.data) === 'Array' && 
-          type(this.references[ref][name]) === 'function'
+          type(data.data) === 'Array'
         ) {
-          this.references[ref][name](dataExtractor(...data.data))
+          referenceFunction(dataExtractor(...data.data))
         } else {
-          this.references[ref][name](dataExtractor(data.data))
+          referenceFunction(dataExtractor(data.data))
         }
       }
     })]
@@ -187,7 +254,10 @@ class Mirror extends PureComponent {
 
   render() {
     return <View
-      {...this._panResponder.panHandlers}
+      onStartShouldSetResponderCapture={() => {
+        this._isSlave = false
+        return false
+      }}
     >{this.state.children}</View>
   }
 

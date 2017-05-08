@@ -22,28 +22,27 @@ export default class reactNativeMirror extends Component {
       <View testID='123' style={styles.container}>
         <View style={{flex:1}}>
           <View style={{flex:1}}>
-            {/*<Mirror>
-              <Ex />
-            </Mirror>*/}
+            <Mirror>
+              <Ex mirrorChildren={true}/>   
+            </Mirror>
           </View>
           <View style={{flex:1}}>
-            {/*<Mirror>
-              <Ex />
-            </Mirror>*/}
+            <Mirror>
+              <Ex mirrorChildren={true}/>   
+            </Mirror>
           </View>
         </View>
         <View style={{flex:1}}>
 
          <View style={{flex:1}}>
-          {/*<Mirror>
-              <Ex />
-          </Mirror>*/}
+          <Mirror>
+              <Ex mirrorChildren={true}/>   
+          </Mirror>
         </View>
 
          <View style={{flex:1}}>
           <Mirror>
-            {React.cloneElement(<Ex />)}
-            
+            <Ex mirrorChildren={true}/>            
           </Mirror>
         </View>
         </View>
