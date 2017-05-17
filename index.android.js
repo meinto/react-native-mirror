@@ -13,7 +13,7 @@ import {
   ScrollView,
   Dimensions,
 } from 'react-native';
-import Mirror from './src/Mirror'
+import Mirror, { scrollviewBootstrap, touchableBootstrap } from './src/Mirror'
 import Ex from './ExampleComponent'
 
 export default class reactNativeMirror extends Component {
@@ -22,12 +22,21 @@ export default class reactNativeMirror extends Component {
       <View testID='123' style={styles.container}>
         <View style={{flex:1}}>
           <View style={{flex:1}}>
-            <Mirror>
+            <Mirror
+              mirroredProps={[
+                scrollviewBootstrap,
+                
+              ]}
+            >
               <Ex mirrorChildren={true}/>   
             </Mirror>
           </View>
           <View style={{flex:1}}>
-            <Mirror>
+            <Mirror
+              mirroredProps={[
+                scrollviewBootstrap
+              ]}
+            >
               <Ex mirrorChildren={true}/>   
             </Mirror>
           </View>
@@ -35,13 +44,21 @@ export default class reactNativeMirror extends Component {
         <View style={{flex:1}}>
 
          <View style={{flex:1}}>
-          <Mirror>
+          <Mirror
+            mirroredProps={[
+              scrollviewBootstrap
+            ]}
+          >
               <Ex mirrorChildren={true}/>   
           </Mirror>
         </View>
 
          <View style={{flex:1}}>
-          <Mirror>
+          <Mirror
+            mirroredProps={[
+              scrollviewBootstrap
+            ]}
+          >
             <Ex mirrorChildren={true}/>            
           </Mirror>
         </View>
