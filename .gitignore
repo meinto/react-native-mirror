@@ -53,3 +53,5 @@ fastlane/Preview.html
 fastlane/screenshots
 
 tasks.json
+
+Examples/mirror/react-native-mirror/
