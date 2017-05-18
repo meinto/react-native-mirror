@@ -4,7 +4,6 @@ import React, {
 } from 'react'
 import { 
   View,
-  PanResponder,
 } from 'react-native'
 import type from 'type-detect'
 import { EventRegister } from 'react-native-event-listeners'
@@ -16,6 +15,13 @@ class Mirror extends PureComponent {
     id: 'mirror',
     mirroredProps: [],
     _isRootMirror: true,
+  }
+
+  static propTypes = {
+    id: React.PropTypes.string,
+    mirroredProps: React.PropTypes.array,
+    _isRootMirror: React.PropTypes.bool,
+    children: React.PropTypes.any,
   }
 
   constructor(props) {
@@ -31,61 +37,23 @@ class Mirror extends PureComponent {
     })
 
     this._isSlave = true
+    this._reset()
 
     this.state = {
       children: null,
     }
   }
 
-  componentWillMount() {
-    this._refNum = 0
-    this.references = []
-    this.listeners = []
-    /* TODO */
-    // this._privateListeners = []
-
-    // this._privateListeners = [...this._privateListeners, EventRegister.on('componentWillReceiveProps', ({id, emitter, nextProps}) => {
-    //   if (this.props.id === id && emitter !== this)
-    //     this._componentWillReceiveProps(nextProps)
-    // })]
-
-    this._panResponder = PanResponder.create({
-      onStartShouldSetPanResponder: (evt, gestureState) => {
-        this._isSlave = false
-        return true
-      },
-    })
-
-    this._panHandlers = this._panResponder.panHandlers
-  }
-
-  componentDidMount() {
-    this._prepareChildren()
-  }
 
   componentWillUnmount() {
     this._unregisterListeners()
-    /* TODO */
-    // this._privateListeners.forEach(_id => {
-    //   EventRegister.rm(_id)
-    // })
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.children !== undefined && nextProps.children !== this.props.children) {
-      /* TODO */
-      // EventRegister.emit('componentWillReceiveProps', {
-      //   emitter: this,
-      //   id: this.props.id,
-      //   nextProps,
-      // })
-      this._componentWillReceiveProps(nextProps)
-    }
-  }
 
-  _componentWillReceiveProps = nextProps => {
-    this._unregisterListeners()
-    this._prepareChildren()
+  _reset = () => {
+    this._refNum = 0
+    this.references = {}
+    this.listeners = []
   }
 
   _inject = (name, ref, data) => {
@@ -150,15 +118,18 @@ class Mirror extends PureComponent {
               if (forwards[_forwardConfig.fromProp] === undefined)
                 forwards[_forwardConfig.fromProp] = []
               forwards[_forwardConfig.fromProp] = {
-                forwardToInstance: [...forwards[_forwardConfig.fromProp], _forwardConfig.toInstance],
-                forwardToProp: [...forwards[_forwardConfig.fromProp], _forwardConfig.toProp],
-                dataExtractor: _forwardConfig.dataExtractor
+                forwardToInstance: [...forwards[_forwardConfig.fromProp], _forwardConfig.toInstance]
+                  .filter(fn => fn !== undefined),
+                forwardToProp: [...forwards[_forwardConfig.fromProp], _forwardConfig.toProp]
+                  .filter(fn => fn !== undefined),
+                dataExtractor: _forwardConfig.dataExtractor,
               }
             }
           })
 
           Object.keys(forwards).forEach(_key => {
             const originalProp = _child.props[_key]
+
             injectedProps[_key] = (...args) => {
               const _args = (args.length > 1) ? args : args[0]
               forwards[_key].forwardToInstance.forEach(name => {
@@ -203,10 +174,9 @@ class Mirror extends PureComponent {
   }
 
   _prepareChildren = () => {
-    const injectedChildren = this._mapChildren(this.props.children)
-    this.setState({
-      children: injectedChildren
-    })
+    this._unregisterListeners()
+    this._reset()
+    return this._mapChildren(this.props.children)
   }
 
   _registerInstanceListener(name, ref, dataExtractor) {
@@ -242,7 +212,7 @@ class Mirror extends PureComponent {
   }
 
   _unregisterListeners = () => {
-    this.listeners.forEach(_id => {
+    [...this.listeners].forEach(_id => {
       EventRegister.rm(_id)
     })
   }
@@ -253,7 +223,7 @@ class Mirror extends PureComponent {
         this._isSlave = false
         return false
       }}
-    >{this.state.children}</View>
+    >{this._prepareChildren()}</View>
   }
 
 }
@@ -277,38 +247,38 @@ export const scrollviewBootstrap = [{
       x: event.nativeEvent.contentOffset.x,
       animated: false,
     }
-  }
+  },
 }]
 
 export const touchableBootstrap = [
-    {
-      componentTypes: [
-        'TouchableHighlight',
-        'TouchableWithoutFeedback',
-        'TouchableOpacity',
-      ],
-      fromProp: 'onPressIn',
-      toProp: 'onPressIn',
-      dataExtractor: () => {}
-    },
-    {
-      componentTypes: [
-        'TouchableHighlight',
-        'TouchableWithoutFeedback',
-        'TouchableOpacity',
-      ],
-      fromProp: 'onPressOut',
-      toProp: 'onPressOut',
-      dataExtractor: () => {}
-    },
-    {
-      componentTypes: [
-        'TouchableHighlight',
-        'TouchableWithoutFeedback',
-        'TouchableOpacity',
-      ],
-      fromProp: 'onPress',
-      toProp: 'onPress',
-      dataExtractor: () => {}
-    },
-  ]
+  {
+    componentTypes: [
+      'TouchableHighlight',
+      'TouchableWithoutFeedback',
+      'TouchableOpacity',
+    ],
+    fromProp: 'onPressIn',
+    toProp: 'onPressIn',
+    dataExtractor: () => {},
+  },
+  {
+    componentTypes: [
+      'TouchableHighlight',
+      'TouchableWithoutFeedback',
+      'TouchableOpacity',
+    ],
+    fromProp: 'onPressOut',
+    toProp: 'onPressOut',
+    dataExtractor: () => {},
+  },
+  {
+    componentTypes: [
+      'TouchableHighlight',
+      'TouchableWithoutFeedback',
+      'TouchableOpacity',
+    ],
+    fromProp: 'onPress',
+    toProp: 'onPress',
+    dataExtractor: () => {},
+  },
+]
