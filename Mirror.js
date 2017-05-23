@@ -199,7 +199,11 @@ class Mirror extends PureComponent {
 
   _registerListener = (name, ref, dataExtractor, isProperty) => {
     this.listeners = [...this.listeners, EventRegister.on(name, data => {
-      if (data.ref === ref && data.emitter !== this) {
+      if (
+        data.ref === ref && 
+        data.emitter !== this &&
+        data.connectionId === this.props.connectionId
+      ) {
         this._isSlave = true
 
         const referenceFunction = (isProperty) 
