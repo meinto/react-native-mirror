@@ -20,9 +20,87 @@ or
 yarn add react-native-mirror
 ```
 
-# Usage
+# Basic Usage
 
-You can forward any prop to any instance-method or prop you want. Docs are coming soon... ;)
+With ```react-native-mirror``` you can inject all properties of a component and forward the result of the prop-function to a clone of the component. The data can be forwarded to another prop or to an instance function of the same hirarchic component. 
+
+Let's say we have a the following viewtree and a "clone" of it:
+
+```javascript
+const component = () => (
+    <View>
+        <ScrollView />
+    </View>
+)
+
+// it has the same structure like the component above
+const cloneComponent = () => (
+    <View>
+        <ScrollView />
+    </View>
+)
+```
+
+Now you want to forward the scroll position of the first ```<ScrollView />``` to the second ```<ScrollView />```. All you have to do is to wrap both components with the ```<Mirror />``` component and add the ```scrollviewBootstrap``` variable from the lib to ```mirroredProps``` like below.
+
+```javascript
+import Mirror, { scrollviewBootstrap } from 'react-native-mirror'
+
+const component = () => (
+    <Mirror mirroredProps={[scrollviewBootstrap]}>
+        <View>
+            <ScrollView />
+        </View>
+    </Mirror>
+)
+
+// it has the same structure like the component above
+const cloneComponent = () => (
+    <Mirror mirroredProps={[scrollviewBootstrap]}>
+        <View>
+            <ScrollView />
+        </View>
+    </Mirror>
+)
+```
+## Bootstraps
+
+At the moment there are bootstraps for basic prop-forwarding for ```<ScrollView />``` and all kinds of ```<TouchableHighlight />```:
+
+* scrollviewBootstrap
+* touchableBootstrap
+
+Simply add them to the ```mirroredProps``` property of the ```<Mirror />```. The ```scrollviewBootstrap``` forwards the scroll position to the cloned ```<ScrollView />``` ('s) and make it scroll to the same position.
+
+Be careful with the ```touchableBootstrap```. It forwards the onPress (onPressIn, onPressOut, ...) property to the clone. Keep in mind, that this triggers the property action also on the clone (maybe a download or navigation action or something).
+
+## Custom forwarding / injection
+
+The ```mirroredProps``` property of the ```<Mirror />``` takes an array of forwarding objects. The objects must have the folowing structure:
+
+```javascript
+{
+    // array of strings of component types. e.g.: 'ScrollView'
+    componentTypes: React.PropTypes.array,
+    // name of the property you want to forward. e.g.: 'onScroll'
+    fromProp: React.PropTypes.string,
+    
+    // name of the clone-property which receives the data. e.g.: 'customScrollTo'
+    toProp: React.PropTypes.string,
+    // or
+    // name of the clone-instanceMethod which receives the data. e.g.: 'scrollTo'
+    toInstance: React.PropTypes.string,
+    
+    // function to extract the forwarding data 
+    dataExtractor: React.PropTypes.func,
+}
+```
+
+The ```dataExtractor``` receives the plain data from the property defined in ```fromProp``` and returns the data which should be forwarded...
+
+## Basic example with custom component
+
+When you want to mirror custom components you have to flag them with a property ```mirrorChildren={true}```. Maybe this isn't needed in later version of the lib...
 
 ```javascript
 import Mirror, {
@@ -51,3 +129,11 @@ export default class MirrorExample extends Component {
   }
 }
 ```
+
+# API
+
+| prop name      | functionality                                        |
+| -------------- | ---------------------------------------------------- |
+| connectionId   | an Id that indicates which Mirrors are connected     |
+| containerStyle | style the Mirror view-container (normaly not needed) |
+| mirroredProps  | see the description in the topic above               |
