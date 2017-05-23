@@ -74,6 +74,7 @@ class Mirror extends PureComponent {
       if (clonedElement.props && clonedElement.props.mirrorChildren === true) {
 
         const mirroredProps = [...this.mirroredProps]
+        const innerMirrorProps = [...this.props]
         /* inheritance inversion to inject child tree of component */
         const ClassToExtend = _child.type
         class InjectChildTree extends ClassToExtend {
@@ -81,6 +82,7 @@ class Mirror extends PureComponent {
             return (
               <Mirror
                 mirroredProps={[...mirroredProps]}
+                {...innerMirrorProps}
                 _isRootMirror={false}
               >
                 {super.render()}
@@ -89,7 +91,11 @@ class Mirror extends PureComponent {
           }
         }
 
-        clonedElement = <InjectChildTree />
+        clonedElement = (
+          <InjectChildTree
+            {..._child.props}
+          />
+        )
 
       } else {
 
