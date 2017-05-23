@@ -150,7 +150,7 @@ class Mirror extends PureComponent {
             })
           })
 
-          let children = _child.props.children && this._mapChildren(_child.props.children)
+          let children = _child.props.children && this._mapChildren(_child.props.children) || []
           children = (children.length > 1) ? children : children[0]
 
           injectedProps = Object.assign({}, _child.props, injectedProps, {
