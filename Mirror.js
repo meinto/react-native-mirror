@@ -12,13 +12,13 @@ import { EventRegister } from 'react-native-event-listeners'
 class Mirror extends PureComponent {
 
   static defaultProps = {
-    id: 'mirror',
+    connectionId: 'mirror',
     mirroredProps: [],
     _isRootMirror: true,
   }
 
   static propTypes = {
-    id: React.PropTypes.string,
+    connectionId: React.PropTypes.string,
     mirroredProps: React.PropTypes.array,
     _isRootMirror: React.PropTypes.bool,
     children: React.PropTypes.any,
@@ -60,7 +60,7 @@ class Mirror extends PureComponent {
     if (!this._isSlave) {
       EventRegister.emit(name, {
         emitter: this,
-        id: this.props.id,
+        connectionId: this.props.connectionId,
         ref,
         data,
       })

@@ -1,6 +1,6 @@
 {
   "name": "react-native-mirror",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "author": "Tobias Meinhardt <tobias.meinhardt89@gmail.com>",
   "main": "Mirror.js",
   "scripts": {
