@@ -83,8 +83,8 @@ class Mirror extends PureComponent {
           render() {
             return (
               <Mirror
-                mirroredProps={[...mirroredProps]}
                 {...innerMirrorProps}
+                mirroredProps={[...mirroredProps]}
                 _isRootMirror={false}
               >
                 {super.render()}
