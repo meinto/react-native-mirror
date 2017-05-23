@@ -13,6 +13,7 @@ class Mirror extends PureComponent {
 
   static defaultProps = {
     connectionId: 'mirror',
+    containerStyle: {},
     mirroredProps: [],
     _isRootMirror: true,
   }
@@ -22,6 +23,7 @@ class Mirror extends PureComponent {
     mirroredProps: React.PropTypes.array,
     _isRootMirror: React.PropTypes.bool,
     children: React.PropTypes.any,
+    containerStyle: React.PropTypes.any,
   }
 
   constructor(props) {
@@ -231,6 +233,7 @@ class Mirror extends PureComponent {
         this._isSlave = false
         return false
       }}
+      style={this.props.containerStyle}
     >{this._prepareChildren()}</View>
   }
 
