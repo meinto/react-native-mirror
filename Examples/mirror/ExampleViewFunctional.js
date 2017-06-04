@@ -35,9 +35,6 @@ const Ex = () => {
                   >
                     <TouchableWithoutFeedback>
                       <View
-                        ref={node => {
-                          this.references['ref-' + i + '-' + pageIndex] = node
-                        }}
                         style={styles.button}
                       >
                         <Text style={styles.text}>{'PRESS ME!!!'}</Text>

@@ -13,6 +13,7 @@ import {
 } from 'react-native'
 
 import ExampleView from './ExampleView'
+// import ExampleView from './ExampleViewFunctional'
 
 /*
  * IMPORTANT
@@ -36,7 +37,7 @@ export default class MirrorExample extends Component {
             scrollviewBootstrap,
             touchableBootstrap,
           ]}>
-            <ExampleView mirrorChildren={true}/>
+            <ExampleView />
           </Mirror>
         </View>
         <View style={styles.mirrorContainer}>
@@ -44,7 +45,7 @@ export default class MirrorExample extends Component {
             scrollviewBootstrap,
             touchableBootstrap,
           ]}>
-            <ExampleView mirrorChildren={true}/>
+            <ExampleView />
           </Mirror>
         </View>
         <View style={styles.mirrorContainer}>
@@ -52,7 +53,7 @@ export default class MirrorExample extends Component {
             scrollviewBootstrap,
             touchableBootstrap,
           ]}>
-            <ExampleView mirrorChildren={true}/>
+            <ExampleView />
           </Mirror>
         </View>
         <View style={styles.mirrorContainer}>
@@ -60,7 +61,7 @@ export default class MirrorExample extends Component {
             scrollviewBootstrap,
             touchableBootstrap,
           ]}>
-            <ExampleView mirrorChildren={true}/>
+            <ExampleView />
           </Mirror>
         </View>
       </View>
