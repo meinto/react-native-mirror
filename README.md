@@ -98,9 +98,53 @@ The ```mirroredProps``` property of the ```<Mirror />``` takes an array of forwa
 
 The ```dataExtractor``` receives the plain data from the property defined in ```fromProp``` and returns the data which should be forwarded...
 
-## Basic example with custom component
+## Example with custom components
 
-When you want to mirror custom components you have to flag them with a property ```mirrorChildren={true}```. Maybe this isn't needed in later version of the lib...
+When you want to mirror custom components you have different choises. You can turn on the auto component detection with the property ```experimentalComponentDetection={true}```, set on the ```<Mirror />``` component. Like the name sais, this functionality is experimental...
+
+When you don't want to use the auto detection you have to flag your custom components with a property ```mirrorClassComponent={true}``` or ```mirrorFunctionalComponent={true}```. Be careful with this and make sure you set them properly (```mirrorClassComponent``` for **class components only** and ```mirrorFunctionalComponent``` for **functional components only**!)
+
+If you don't set them right your app will throw a error message *"Cannot call a class as a function"*.
+
+### Example with auto detection
+
+```javascript
+import Mirror, {
+  scrollviewBootstrap,
+  touchableBootstrap,
+} from 'react-native-mirror'
+
+export default class MirrorExample extends Component {
+  render() {
+    return (
+      <View style={styles.container}>
+        <Mirror
+            experimentalComponentDetection={true}
+            mirroredProps={[
+              scrollviewBootstrap,
+              touchableBootstrap,
+            ]}
+        >
+          <ExampleView />
+        </Mirror>
+        <Mirror 
+            experimentalComponentDetection={true}
+            mirroredProps={[
+              scrollviewBootstrap,
+              touchableBootstrap,
+            ]}
+        >
+          <ExampleView />
+        </Mirror>
+      </View>
+    )
+  }
+}
+```
+
+### Example with manual component detection
+
+In the following example i assume that the custom Component ```<ExampleView />``` is a class component.
 
 ```javascript
 import Mirror, {
@@ -116,13 +160,13 @@ export default class MirrorExample extends Component {
           scrollviewBootstrap,
           touchableBootstrap,
         ]}>
-          <ExampleView mirrorChildren={true}/>
+          <ExampleView mirrorClassComponent={true}/>
         </Mirror>
         <Mirror mirroredProps={[
           scrollviewBootstrap,
           touchableBootstrap,
         ]}>
-          <ExampleView mirrorChildren={true}/>
+          <ExampleView mirrorClassComponent={true}/>
         </Mirror>
       </View>
     )
@@ -132,8 +176,13 @@ export default class MirrorExample extends Component {
 
 # API
 
-| prop name      | functionality                                        |
-| -------------- | ---------------------------------------------------- |
-| connectionId   | an Id that indicates which Mirrors are connected     |
-| containerStyle | style the Mirror view-container (normaly not needed) |
-| mirroredProps  | see the description in the topic above               |
+| prop name                      | functionality                                                   |
+| ------------------------------ | --------------------------------------------------------------- |
+| connectionId                   | an Id that indicates which Mirrors are connected                |
+| containerStyle                 | style the Mirror view-container (normaly not needed)            |
+| mirroredProps                  | see the description in the topic above                          |
+| experimentalComponentDetection | mirrors custom components automatically (see description above) |
+
+# Questions, enhancements or improvements?
+
+... then open up an issue! :)
