@@ -33,34 +33,46 @@ export default class MirrorExample extends Component {
     return (
       <View style={styles.container}>
         <View style={styles.mirrorContainer}>
-          <Mirror mirroredProps={[
-            scrollviewBootstrap,
-            touchableBootstrap,
-          ]}>
+          <Mirror 
+            experimentalComponentDetection={true}
+            mirroredProps={[
+              scrollviewBootstrap,
+              touchableBootstrap,
+            ]}
+          >
+            <ExampleView/>
+          </Mirror>
+        </View>
+        <View style={styles.mirrorContainer}>
+          <Mirror 
+            experimentalComponentDetection={true}
+            mirroredProps={[
+              scrollviewBootstrap,
+              touchableBootstrap,
+            ]}
+          >
             <ExampleView />
           </Mirror>
         </View>
         <View style={styles.mirrorContainer}>
-          <Mirror mirroredProps={[
-            scrollviewBootstrap,
-            touchableBootstrap,
-          ]}>
-            <ExampleView />
+          <Mirror 
+            experimentalComponentDetection={true}
+            mirroredProps={[
+              scrollviewBootstrap,
+              touchableBootstrap,
+            ]}
+          >
+            <ExampleView/>
           </Mirror>
         </View>
         <View style={styles.mirrorContainer}>
-          <Mirror mirroredProps={[
-            scrollviewBootstrap,
-            touchableBootstrap,
-          ]}>
-            <ExampleView />
-          </Mirror>
-        </View>
-        <View style={styles.mirrorContainer}>
-          <Mirror mirroredProps={[
-            scrollviewBootstrap,
-            touchableBootstrap,
-          ]}>
+          <Mirror 
+            experimentalComponentDetection={true}
+            mirroredProps={[
+              scrollviewBootstrap,
+              touchableBootstrap,
+            ]}
+          >
             <ExampleView />
           </Mirror>
         </View>
