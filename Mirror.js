@@ -15,12 +15,14 @@ class Mirror extends PureComponent {
     connectionId: 'mirror',
     containerStyle: {},
     mirroredProps: [],
+    experimentalComponentDetection: false,
     _isRootMirror: true,
   }
 
   static propTypes = {
     connectionId: React.PropTypes.string,
     mirroredProps: React.PropTypes.array,
+    experimentalComponentDetection: React.PropTypes.bool,
     _isRootMirror: React.PropTypes.bool,
     children: React.PropTypes.any,
     containerStyle: React.PropTypes.any,
@@ -82,31 +84,64 @@ class Mirror extends PureComponent {
       
       if (!typeName && _child.type) {
 
+        const isClassComponent = typeof _child.type === 'function' && /(\.classCallCheck)/.test(_child.type.toString())
+
         const mirroredProps = [...this.mirroredProps]
         const innerMirrorProps = Object.assign({}, this.props, {
           children: [],
         })
-        /* inheritance inversion to inject child tree of component */
-        const ClassToExtend = _child.type
-        class InjectChildTree extends ClassToExtend {
-          render() {
-            return (
-              <Mirror
-                {...innerMirrorProps}
-                mirroredProps={[...mirroredProps]}
-                _isRootMirror={false}
-              >
-                {super.render()}
-              </Mirror>
-            )
-          }
-        }
 
-        clonedElement = (
-          <InjectChildTree
-            {..._child.props}
-          />
-        )
+        if (
+          _child.props.mirrorClassComponent === true ||
+          this.props.experimentalComponentDetection === true && isClassComponent
+        ) {
+          /* inheritance inversion to inject child tree of component */
+          const ClassToExtend = _child.type
+          class InjectChildTree extends ClassToExtend {
+            render() {
+              return (
+                <Mirror
+                  {...innerMirrorProps}
+                  mirroredProps={[...mirroredProps]}
+                  _isRootMirror={false}
+                >
+                  {super.render()}
+                </Mirror>
+              )
+            }
+          }
+
+          clonedElement = (
+            <InjectChildTree
+              {..._child.props}
+            />
+          )
+        } else if (
+          _child.props.mirrorFunctionalComponent === true ||
+          this.props.experimentalComponentDetection === true && !isClassComponent
+        ) {
+          class InjectChildTree extends React.Component {
+            render() {
+              return (
+                <Mirror
+                  {...innerMirrorProps}
+                  mirroredProps={[...mirroredProps]}
+                  _isRootMirror={false}
+                >
+                  {_child.type()}
+                </Mirror>
+              )
+            }
+          }
+
+          clonedElement = (
+            <InjectChildTree
+              {..._child.props}
+            />
+          )
+        } else {
+          clonedElement = React.createElement(_child.type)
+        }
 
       } else if (typeName) {
         let injectedProps = {}
