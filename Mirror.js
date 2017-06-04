@@ -72,8 +72,15 @@ class Mirror extends PureComponent {
   _mapChildren = (children) => {
     return Children.map(children, _child => {
       let clonedElement = _child
+
+      let typeName = false
+
+      if (type(_child.type) === 'string')
+        typeName = _child.type
+      else if (_child.type && _child.type.displayName) 
+        typeName = _child.type.displayName
       
-      if (clonedElement.props && clonedElement.props.mirrorChildren === true) {
+      if (!typeName && _child.type) {
 
         const mirroredProps = [...this.mirroredProps]
         const innerMirrorProps = Object.assign({}, this.props, {
@@ -101,15 +108,11 @@ class Mirror extends PureComponent {
           />
         )
 
-      } else {
-
-        const typeName = type(_child.type) === 'string' ? _child.type : (_child.type) ? _child.type.displayName : false
-
-        if (typeName) {
-          let injectedProps = {}
+      } else if (typeName) {
+        let injectedProps = {}
 
           /* store a reference of every child element */
-          const _ref = 'mirror-' + this._refNum++
+        const _ref = 'mirror-' + this._refNum++
           
           /* prepare forwards
           * example: 
@@ -121,62 +124,61 @@ class Mirror extends PureComponent {
               } 
             }
           */
-          const forwards = {}
-          this.mirroredProps.forEach(_forwardConfig => {
-            const shouldForward = _forwardConfig.componentTypes.includes(typeName)
-            if (shouldForward) {
-              if (forwards[_forwardConfig.fromProp] === undefined)
-                forwards[_forwardConfig.fromProp] = []
-              forwards[_forwardConfig.fromProp] = {
-                forwardToInstance: [...forwards[_forwardConfig.fromProp], _forwardConfig.toInstance]
+        const forwards = {}
+        this.mirroredProps.forEach(_forwardConfig => {
+          const shouldForward = _forwardConfig.componentTypes.includes(typeName)
+          if (shouldForward) {
+            if (forwards[_forwardConfig.fromProp] === undefined)
+              forwards[_forwardConfig.fromProp] = []
+            forwards[_forwardConfig.fromProp] = {
+              forwardToInstance: [...forwards[_forwardConfig.fromProp], _forwardConfig.toInstance]
                   .filter(fn => fn !== undefined),
-                forwardToProp: [...forwards[_forwardConfig.fromProp], _forwardConfig.toProp]
+              forwardToProp: [...forwards[_forwardConfig.fromProp], _forwardConfig.toProp]
                   .filter(fn => fn !== undefined),
-                dataExtractor: _forwardConfig.dataExtractor,
-              }
+              dataExtractor: _forwardConfig.dataExtractor,
             }
-          })
+          }
+        })
 
-          Object.keys(forwards).forEach(_key => {
-            const originalProp = _child.props[_key]
+        Object.keys(forwards).forEach(_key => {
+          const originalProp = _child.props[_key]
 
-            injectedProps[_key] = (...args) => {
-              const _args = (args.length > 1) ? args : args[0]
-              forwards[_key].forwardToInstance.forEach(name => {
-                this._inject(name, _ref, _args)
-              })
-              forwards[_key].forwardToProp.forEach(name => {
-                this._inject(name, _ref, _args)
-              })
-              if (type(originalProp) === 'function')
-                (args.length > 1) ? originalProp(...args) : originalProp(args[0])
-            }
-
+          injectedProps[_key] = (...args) => {
+            const _args = (args.length > 1) ? args : args[0]
             forwards[_key].forwardToInstance.forEach(name => {
-              this._registerInstanceListener(name, _ref, forwards[_key].dataExtractor)
+              this._inject(name, _ref, _args)
             })
             forwards[_key].forwardToProp.forEach(name => {
-              this._registerPropertyListener(name, _ref, forwards[_key].dataExtractor)
+              this._inject(name, _ref, _args)
             })
+            if (type(originalProp) === 'function')
+              (args.length > 1) ? originalProp(...args) : originalProp(args[0])
+          }
+
+          forwards[_key].forwardToInstance.forEach(name => {
+            this._registerInstanceListener(name, _ref, forwards[_key].dataExtractor)
           })
-
-          let children = _child.props.children && this._mapChildren(_child.props.children) || []
-          children = (children.length > 1) ? children : children[0]
-
-          injectedProps = Object.assign({}, _child.props, injectedProps, {
-            ref: node => {
-              this.references[_ref] = node 
-
-              const {ref} = _child 
-              if (type(ref) === 'function') {
-                ref(node)
-              }
-            },
-            children,
+          forwards[_key].forwardToProp.forEach(name => {
+            this._registerPropertyListener(name, _ref, forwards[_key].dataExtractor)
           })
+        })
 
-          clonedElement = React.cloneElement(_child, injectedProps)
-        }
+        let children = _child.props.children && this._mapChildren(_child.props.children) || []
+        children = (children.length > 1) ? children : children[0]
+
+        injectedProps = Object.assign({}, _child.props, injectedProps, {
+          ref: node => {
+            this.references[_ref] = node 
+
+            const {ref} = _child 
+            if (type(ref) === 'function') {
+              ref(node)
+            }
+          },
+          children,
+        })
+
+        clonedElement = React.cloneElement(_child, injectedProps)
       }
 
       return clonedElement
