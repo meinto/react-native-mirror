@@ -287,20 +287,36 @@ export default Mirror
  * mirror bootstrap
  */
 
-export const scrollviewBootstrap = [{
-  componentTypes: [
-    'ScrollView',
-  ],
-  fromProp: 'onScroll',
-  toInstance: 'scrollTo',
-  dataExtractor: event => {
-    return {
-      y: event.nativeEvent.contentOffset.y,
-      x: event.nativeEvent.contentOffset.x,
-      animated: false,
-    }
+export const scrollviewBootstrap = [
+  {
+    componentTypes: [
+      'ScrollView',
+    ],
+    fromProp: 'onScroll',
+    toInstance: 'scrollTo',
+    dataExtractor: event => {
+      return {
+        y: event.nativeEvent.contentOffset.y,
+        x: event.nativeEvent.contentOffset.x,
+        animated: false,
+      }
+    },
   },
-}]
+  { 
+    componentTypes: [
+      'FlatList',
+    ],
+    fromProp: 'onScroll',
+    toInstance: 'scrollToOffset',
+    dataExtractor: event => {
+      return {
+        y: event.nativeEvent.contentOffset.y,
+        x: event.nativeEvent.contentOffset.x,
+        animated: false,
+      }
+    },
+  },
+]
 
 export const touchableBootstrap = [
   {
