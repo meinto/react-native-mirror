@@ -1,13 +1,8 @@
-import React, { 
-  PureComponent,
-  Children,
-} from 'react'
-import { 
-  View,
-} from 'react-native'
-import type from 'type-detect'
-import { EventRegister } from 'react-native-event-listeners'
-
+import React, { PureComponent,Children } from 'react';
+import { View } from 'react-native';
+import type from 'type-detect';
+import { EventRegister } from 'react-native-event-listeners';
+import PropTypes from 'prop-types';
 
 class Mirror extends PureComponent {
 
@@ -20,12 +15,12 @@ class Mirror extends PureComponent {
   }
 
   static propTypes = {
-    connectionId: React.PropTypes.string,
-    mirroredProps: React.PropTypes.array,
-    experimentalComponentDetection: React.PropTypes.bool,
-    _isRootMirror: React.PropTypes.bool,
-    children: React.PropTypes.any,
-    containerStyle: React.PropTypes.any,
+    connectionId: PropTypes.string,
+    mirroredProps: PropTypes.array,
+    experimentalComponentDetection: PropTypes.bool,
+    _isRootMirror: PropTypes.bool,
+    children: PropTypes.any,
+    containerStyle: PropTypes.any,
   }
 
   constructor(props) {
