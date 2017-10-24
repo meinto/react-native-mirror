@@ -10,7 +10,6 @@ module.exports = {
     "eslint:recommended",
     "plugin:react/recommended"
   ],
-  "installedESLint": true,
   "parserOptions": {
     "ecmaFeatures": {
       "experimentalObjectRestSpread": true,
@@ -18,9 +17,6 @@ module.exports = {
     },
     "sourceType": "module"
   },
-  "jsx-no-duplicate-props": [
-    "error", { "ignoreCase": true }
-  ],
   "plugins": [
     "react",
     "react-native",
@@ -49,7 +45,7 @@ module.exports = {
     ],
     "block-spacing": "error",
     "keyword-spacing":"error",
-    "no-irregular-whitespace": "error",
+    // "no-irregular-whitespace": "error",
     "space-in-parens": ["error", "never"],
     "space-unary-ops": "error",
     "space-before-function-paren": ["error", "never"],
@@ -66,10 +62,6 @@ module.exports = {
       2,
       { "SwitchCase": 1 }
     ],
-    /*"linebreak-style": [
-      "error",
-      "unix"
-    ],*/
     "quotes": [
       "error",
       "single"

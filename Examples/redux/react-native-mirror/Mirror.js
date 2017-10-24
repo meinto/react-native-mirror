@@ -1,26 +1,38 @@
-import React, { PureComponent, Children } from 'react'
-import { View } from 'react-native'
+import React, { 
+  PureComponent,
+  Children,
+} from 'react'
+import { 
+  View,
+} from 'react-native'
 import type from 'type-detect'
 import { EventRegister } from 'react-native-event-listeners'
-import PropTypes from 'prop-types'
+
 
 class Mirror extends PureComponent {
 
   static defaultProps = {
     connectionId: 'mirror',
-    containerStyle: {}, 
+    containerStyle: {},
     mirroredProps: [],
     experimentalComponentDetection: false,
     _isRootMirror: true,
   }
 
   static propTypes = {
-    connectionId: PropTypes.string,
-    mirroredProps: PropTypes.array,
-    experimentalComponentDetection: PropTypes.bool,
-    _isRootMirror: PropTypes.bool,
-    children: PropTypes.any,
-    containerStyle: PropTypes.any,
+    connectionId: React.PropTypes.string,
+    mirroredProps: React.PropTypes.array,
+    experimentalComponentDetection: React.PropTypes.bool,
+    _isRootMirror: React.PropTypes.bool,
+    children: React.PropTypes.any,
+    containerStyle: React.PropTypes.any,
+  }
+
+  static CHILD_TYPES = {
+    REACT_COMPONENT: 'REACT_COMPONENT',
+    REDUX_CONTAINER: 'REDUX_CONTAINER',
+    CLASS_COMPONENT: 'CLASS_COMPONENT',
+    FUNC_COMPONENT: 'FUNC_COMPONENT',
   }
 
   constructor(props) {
@@ -72,14 +84,39 @@ class Mirror extends PureComponent {
 
       let typeName = false
 
-      if (type(_child.type) === 'string')
+      if (type(_child.type) === 'string') {
         typeName = _child.type
-      else if (_child.type && _child.type.displayName) 
+      } else if (_child.type && _child.type.displayName) {
         typeName = _child.type.displayName
-      
-      if (!typeName && _child.type) {
+      }
 
-        const isClassComponent = typeof _child.type === 'function' && /(\.classCallCheck)/.test(_child.type.toString())
+      /* check for redux */
+      let isReduxContainer = false
+      if (
+        type(_child.type) === 'function' &&
+        _child.type.name.toLowerCase() === 'connect' &&
+        _child.type.WrappedComponent
+      ) {
+        isReduxContainer = true
+      }
+
+      // console.log(React.createElement(_child.type), _child.type.name.toLowerCase(), isReduxContainer)
+      
+      if (isReduxContainer || !typeName && _child.type) {
+
+        let component = _child.type
+        if (isReduxContainer)
+          component = _child.type.WrappedComponent
+
+        const wrapped = class inwr extends component {
+          constructor(props) {
+            super(props)
+          }
+        }
+
+        console.log(React.createElement(wrapped))
+
+        const isClassComponent = typeof component === 'function' && /(\.classCallCheck)/.test(component.toString())
 
         const mirroredProps = [...this.mirroredProps]
         const innerMirrorProps = Object.assign({}, this.props, {
@@ -91,7 +128,7 @@ class Mirror extends PureComponent {
           this.props.experimentalComponentDetection === true && isClassComponent
         ) {
           /* inheritance inversion to inject child tree of component */
-          const ClassToExtend = _child.type
+          const ClassToExtend = component
           class InjectChildTree extends ClassToExtend {
             render() {
               return (
@@ -115,6 +152,7 @@ class Mirror extends PureComponent {
           _child.props.mirrorFunctionalComponent === true ||
           this.props.experimentalComponentDetection === true && !isClassComponent
         ) {
+
           class InjectChildTree extends React.Component {
             render() {
               return (
@@ -123,7 +161,7 @@ class Mirror extends PureComponent {
                   mirroredProps={[...mirroredProps]}
                   _isRootMirror={false}
                 >
-                  {_child.type()}
+                  {/*{component()}*/}
                 </Mirror>
               )
             }
@@ -135,16 +173,16 @@ class Mirror extends PureComponent {
             />
           )
         } else {
-          clonedElement = React.createElement(_child.type)
+          clonedElement = React.createElement(component)
         }
 
       } else if (typeName) {
         let injectedProps = {}
 
-        /* store a reference of every child element */
+          /* store a reference of every child element */
         const _ref = 'mirror-' + this._refNum++
           
-        /* prepare forwards
+          /* prepare forwards
           * example: 
             { 
               onScroll: { 
@@ -162,9 +200,9 @@ class Mirror extends PureComponent {
               forwards[_forwardConfig.fromProp] = []
             forwards[_forwardConfig.fromProp] = {
               forwardToInstance: [...forwards[_forwardConfig.fromProp], _forwardConfig.toInstance]
-                .filter(fn => fn !== undefined),
+                  .filter(fn => fn !== undefined),
               forwardToProp: [...forwards[_forwardConfig.fromProp], _forwardConfig.toProp]
-                .filter(fn => fn !== undefined),
+                  .filter(fn => fn !== undefined),
               dataExtractor: _forwardConfig.dataExtractor,
             }
           }
