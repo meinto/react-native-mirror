@@ -5,6 +5,7 @@
 [![dev-dependency status](https://david-dm.org/tobiasMeinhardt/react-native-mirror/dev-status.svg)](https://david-dm.org/tobiasMeinhardt/react-native-mirror?type=dev)
 [![npm](https://img.shields.io/npm/dm/react-native-mirror.svg)](https://www.npmjs.com/package/react-native-mirror)
 [![npm](https://img.shields.io/npm/dt/react-native-mirror.svg)](https://www.npmjs.com/package/react-native-mirror)
+[![travis build](https://travis-ci.org/meinto/react-native-mirror.svg?branch=master)](https://travis-ci.org/meinto/react-native-mirror)
 
 ![Imgur](http://i.imgur.com/X72nd4Q.gif)
 
