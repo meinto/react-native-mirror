@@ -55,3 +55,5 @@ fastlane/screenshots
 tasks.json
 
 Examples/mirror/react-native-mirror/
+
+coverage/
