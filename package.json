@@ -5,7 +5,8 @@
   "main": "Mirror.js",
   "scripts": {
     "start": "node node_modules/react-native/local-cli/cli.js start",
-    "test": "cross-env NODE_ENV=test jest --silent"
+    "test": "cross-env NODE_ENV=test jest --silent",
+    "coveralls": "cat ./coverage/lcov.info | ./node_modules/.bin/coveralls"
   },
   "repository": {
     "type": "git",
@@ -37,21 +38,24 @@
   "devDependencies": {
     "babel-jest": "^21.0.2",
     "babel-preset-react-native": "^3.0.2",
+    "coveralls": "^3.0.0",
     "cross-env": "^5.1.1",
     "jasmine-reporters": "^2.2.1",
     "jest-cli": "^21.0.2",
-    "react-native-cli": "^2.0.1",
-    "react-test-renderer": "16.0.0-alpha.13",
+    "prop-types": "*",
     "react": "*",
     "react-native": "*",
-    "prop-types": "*"
+    "react-native-cli": "^2.0.1",
+    "react-test-renderer": "16.0.0-alpha.13"
   },
   "jest": {
     "collectCoverage": true,
     "modulePathIgnorePatterns": [
       "<rootDir>/Examples/"
     ],
-    "setupTestFrameworkScriptFile": "./setup-jasmine-env.js",
+    "collectCoverageFrom": [
+      "Mirror.js"
+    ],
     "preset": "react-native"
   }
 }
